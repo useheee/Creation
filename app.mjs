@@ -2,8 +2,36 @@ import { JumpCounter } from './counter.mjs';
 const $ = id => document.getElementById(id);
 const video=$('video'), canvas=$('overlay'), ctx=canvas.getContext('2d'), counter=new JumpCounter();
 let model, stream, running=false, busy=false, facing='user', lastFrame=-1, raf, elapsed=0, since=0;
+
+let energyPerKg=0, previousJump=null;
+function renderCalories() {
+  const value=Number($('weight').value);
+  const kg=$('weightUnit').value==='lb'?value*0.45359237:value;
+  const valid=Number.isFinite(kg) && kg>=20 && kg<=350;
+  $('calories').textContent=valid?(energyPerKg*kg).toFixed(1):'—';
+  $('weightHelp').textContent=valid?'Used for this session only. Changing weight recalculates the estimate.':'Enter a weight between 20–350 kg (44.1–771.6 lb).';
+}
+function recordJump(now) {
+  if(previousJump!==null) {
+    const ms=now-previousJump;
+    if(ms>=200 && ms<=1500) {
+      const cadence=60000/ms;
+      const met=cadence<100?8.3:cadence<=120?11.8:12.3;
+      // Gross energy during detected jump intervals: MET × 3.5 × kg / 200 × minutes.
+      // 2024 Adult Compendium: https://pacompendium.com/sports/
+      energyPerKg+=met*3.5/200*(ms/60000);
+    }
+  }
+  previousJump=now; renderCalories();
+}
+$('profile').onclick=()=>{pause();$('profileDialog').showModal();};
+$('closeProfile').onclick=()=>{$('profileDialog').close();};
+$('weight').oninput=renderCalories;
+$('weightUnit').onchange=()=>{$('weight').value='';renderCalories();};
+renderCalories();
+
 const status = text => $('status').textContent=text;
-function pause() { if(running) elapsed+=performance.now()-since; running=false; $('start').textContent='Resume session'; counter.recalibrate(); }
+function pause() { previousJump=null; if(running) elapsed+=performance.now()-since; running=false; $('start').textContent='Resume session'; counter.recalibrate(); }
 function stopCamera() { pause(); cancelAnimationFrame(raf); stream?.getTracks().forEach(t=>t.stop()); stream=null; video.srcObject=null; ctx.clearRect(0,0,canvas.width,canvas.height); $('empty').style.display='flex'; $('start').disabled=true; $('flip').disabled=true; $('off').disabled=true; $('enable').disabled=false; $('badge').textContent='CAMERA OFF'; }
 async function enableCamera() {
   if(busy) return; busy=true; $('enable').disabled=true; $('flip').disabled=true;
@@ -36,10 +64,11 @@ function loop() {
       const visible=p && ids.every(i=>p[i].visibility>.65 && p[i].x>.02 && p[i].x<.98 && p[i].y>.02 && p[i].y<.98);
       if(visible) {ctx.fillStyle='#ccf785'; for(const i of ids){ctx.beginPath();ctx.arc(p[i].x*canvas.width,p[i].y*canvas.height,5,0,Math.PI*2);ctx.fill();}}
       if(running) {
-        if(!visible) { counter.recalibrate(); status('Tracking lost — keep your full body in view.'); }
+        if(!visible) { previousJump=null; counter.recalibrate(); status('Tracking lost — keep your full body in view.'); }
         else {
           const threshold=[.022,.015,.009][Number($('sensitivity').value)-1];
-          counter.update((p[23].y+p[24].y)/2,now,threshold);
+          if(counter.base===null) previousJump=null;
+          if(counter.update((p[23].y+p[24].y)/2,now,threshold)) recordJump(now);
           $('count').textContent=counter.count;
           status(counter.base===null?'Stand still for 2 seconds to calibrate…':'Tracking your jumps · keep the phone still');
           $('hint').textContent=counter.base===null?'Finding your baseline…':'You’re finding your rhythm.';
@@ -51,7 +80,7 @@ function loop() {
 }
 $('enable').onclick=enableCamera;
 $('start').onclick=()=>{if(running){pause();status('Paused. Resume whenever you’re ready.');}else{counter.recalibrate();running=true;since=performance.now();$('start').textContent='Pause session';}};
-$('reset').onclick=()=>{pause();elapsed=0;counter.reset();$('count').textContent='0';$('start').textContent='Start session';$('hint').textContent='One jump at a time.';status(stream?'Count reset. Start a new session.':'Enable your camera to begin');};
+$('reset').onclick=()=>{pause();elapsed=0;energyPerKg=0;renderCalories();counter.reset();$('count').textContent='0';$('start').textContent='Start session';$('hint').textContent='One jump at a time.';status(stream?'Count reset. Start a new session.':'Enable your camera to begin');};
 $('off').onclick=()=>{stopCamera();status('Camera off. Your count is kept until you reset or close the page.');};
 $('flip').onclick=async()=>{stopCamera();facing=facing==='user'?'environment':'user';await enableCamera();};
 $('sensitivity').oninput=()=>{$('sensitivityValue').textContent=['Low','Medium','High'][Number($('sensitivity').value)-1];counter.recalibrate();};
