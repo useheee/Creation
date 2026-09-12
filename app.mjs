@@ -15,8 +15,8 @@ async function enableCamera() {
     $('empty').style.display='none'; video.style.transform=facing==='user'?'scaleX(-1)':''; canvas.style.transform=video.style.transform;
     status('Loading on-device pose tracker…');
     if(!model) {
-      const { FilesetResolver, PoseLandmarker }=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs');
-      const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+      const { FilesetResolver, PoseLandmarker }=await import('https://unpkg.com/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs');
+      const vision=await FilesetResolver.forVisionTasks('https://unpkg.com/@mediapipe/tasks-vision@0.10.21/wasm');
       model=await PoseLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'},runningMode:'VIDEO',numPoses:1});
     }
     $('badge').textContent='CAMERA READY'; $('start').disabled=false; $('flip').disabled=false; $('off').disabled=false; lastFrame=-1;
