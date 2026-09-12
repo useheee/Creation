@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101612"><title>Creation · Skip Studio</title><link rel="stylesheet" href="style.css?v=0.2.0"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101612"><title>Creation · Skip Studio</title><link rel="stylesheet" href="style.css?v=0.3.0"></head>
 <body><main class="screen">
 <video id="video" autoplay muted playsinline></video><canvas id="overlay"></canvas>
 <div id="empty"><span class="camera-icon">◎</span><h1>Ready to skip?</h1><p>Prop your phone 2–3 metres away.<br>Keep your head and feet in view.</p><p class="privacy">Video stays on your phone.</p></div>
-<header><span class="brand">◉ SKIP STUDIO <small>0.2</small></span><span id="badge">CAMERA OFF</span></header>
-<section class="hud" aria-label="Session statistics"><div class="counter"><span>ESTIMATED SKIPS</span><output id="count">0</output></div><div class="metrics"><div><strong id="timer">00:00</strong><span>TIME</span></div><div><strong id="pace">0</strong><span>SKIPS / MIN</span></div></div></section>
+<header><span class="brand">◉ SKIP STUDIO <small>0.3</small></span><span id="badge">CAMERA OFF</span></header>
+<section class="hud" aria-label="Session statistics"><div class="counter"><span>ESTIMATED SKIPS</span><output id="count">0</output></div><div class="metrics"><div><strong id="calories">—</strong><span>EST. KCAL</span></div><div><strong id="timer">00:00</strong><span>TIME</span></div><div><strong id="pace">0</strong><span>SKIPS / MIN</span></div></div></section>
 <div class="controls">
 <p id="status" role="status">Enable your camera to begin</p><p id="hint" hidden>One jump at a time.</p>
 <div class="actions"><button class="primary" id="enable">Enable camera</button><button class="primary" id="start" disabled>Start session</button></div>
-<div class="secondary"><button id="reset">Reset</button><button id="flip" disabled>↻ Flip</button><button id="off" disabled>Camera off</button></div>
+<div class="secondary"><button id="profile">Weight</button><button id="reset">Reset</button><button id="flip" disabled>↻ Flip</button><button id="off" disabled>Camera off</button></div>
 <div class="sensitivity"><label for="sensitivity">Sensitivity <span id="sensitivityValue">Medium</span></label><input aria-label="Jump sensitivity" id="sensitivity" type="range" min="1" max="3" value="2"></div>
-</div></main><script type="module" src="app.mjs?v=0.2.0"></script></body></html>
+</div><dialog id="profileDialog" aria-labelledby="profileTitle"><h2 id="profileTitle">Your calorie estimate</h2><p>Enter your weight. Skips and pace are detected automatically.</p><label for="weight">Body weight</label><div class="weightRow"><input id="weight" type="number" inputmode="decimal" min="0" step="any" placeholder="Enter weight" aria-describedby="weightHelp"><select id="weightUnit" aria-label="Weight unit"><option value="kg">kg</option><option value="lb">lb</option></select></div><p id="weightHelp"></p><p>Estimates energy burned between consecutive detected jumps using weight and pace. Pauses and gaps over 1.5 seconds are excluded. This is not a measurement of fat loss.</p><p>Single jumps and the first jump after a break are not included. Adult pace-based estimates may differ from your actual energy use. <a href="https://pacompendium.com/sports/" target="_blank" rel="noopener">Calculation source</a></p><button id="closeProfile">Done</button></dialog></main><script type="module" src="app.mjs?v=0.3.0"></script></body></html>
